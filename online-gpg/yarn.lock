@@ -4654,8 +4654,8 @@ globby@^6.1.0:
     pinkie-promise "^2.0.0"
 
 "gpg-manager@https://github.com/krzysztofciepka/gpg-manager.git":
-  version "1.0.1"
-  resolved "https://github.com/krzysztofciepka/gpg-manager.git#af09cd1cf4e9fead39f7721aab804df65127ac46"
+  version "1.0.2"
+  resolved "https://github.com/krzysztofciepka/gpg-manager.git#c310bff6571fec2fab23ab01df550c3a1689a938"
   dependencies:
     "@types/jest" "^25.1.3"
     "@types/openpgp" "^4.4.8"
