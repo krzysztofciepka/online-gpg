@@ -133,7 +133,10 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <h1 className="header">Online PGP</h1>
+        <h1 className="header">
+          <Icon type="container" />
+          <span className="title">Online PGP</span>
+        </h1>
         <Row className="row" type="flex" justify="center" gutter={[0, 100]}>
           <Col span={6}>
             <div className="menu">

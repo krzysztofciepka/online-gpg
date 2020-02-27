@@ -4,6 +4,10 @@
   padding: 20px;
 }
 
+.title {
+  margin-left: 10px;
+}
+
 .menu {
   display: flex;
   justify-content: center;
