@@ -1,23 +1,14 @@
-.App {
-  text-align: center;
-  background-color: #282c34;
-}
-
 .menu {
   display: flex;
-  flex-direction: row;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
 .menu-button {
-  margin: 10px;
+  margin: 5px;
+  font-size: large;
 }
 
 .key-input {
-  margin: 50px;
-  min-width: 500px;
-  min-height: 200px;
+  font-size: medium;
+  background-color: whitesmoke;
 }

@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import "./App.css";
 import GpgManager from "gpg-manager";
+import { Button, Input, Row, Col } from "antd";
+const { TextArea } = Input;
 
 class App extends Component {
   constructor() {
@@ -14,11 +16,11 @@ class App extends Component {
       username: "AA",
       email: "test@example.com"
     };
-
-    this.gpgManager = new GpgManager({ rsaKeyBits: 4096 });
   }
 
-  async componentDidMount() {}
+  async componentDidMount() {
+    this.gpgManager = new GpgManager({ rsaKeyBits: 4096 });
+  }
 
   async generateKeys() {
     const { privateKey, publicKey } = await this.gpgManager.generateKeyPair({
@@ -35,7 +37,8 @@ class App extends Component {
   async encrypt() {
     const encryptedMessage = await this.gpgManager.encrypt({
       publicKey: this.state.publicKey,
-      signMessage: false
+      signMessage: false,
+      message: this.state.decryptedMessage
     });
 
     this.setState({ encryptedMessage });
@@ -55,48 +58,87 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <header className="menu">
-          <button
-            className="menu-button"
-            onClick={this.generateKeys.bind(this)}
-          >
-            Genereate keys
-          </button>
-          <button className="menu-button" onClick={this.encrypt.bind(this)}>
-            Encrypt
-          </button>
-          <button className="menu-button" onClick={this.decrypt.bind(this)}>
-            Decrypt
-          </button>
-        </header>
-        <textarea
-          placeholder="Paste private key here"
-          className="key-input"
-          value={this.state.privateKey}
-          onChange={evt => this.setState({ privateKey: evt.target.value })}
-        ></textarea>
-        <textarea
-          placeholder="Paste public key here"
-          className="key-input"
-          value={this.state.publicKey}
-          onChange={evt => this.setState({ publicKey: evt.target.value })}
-        ></textarea>
-        <textarea
-          placeholder="Paste plain text message here"
-          className="key-input"
-          value={this.state.decryptedMessage}
-          onChange={evt =>
-            this.setState({ decryptedMessage: evt.target.value })
-          }
-        ></textarea>
-        <textarea
-          placeholder="Paste encrypted message here"
-          className="key-input"
-          value={this.state.encryptedMessage}
-          onChange={evt =>
-            this.setState({ encryptedMessage: evt.target.value })
-          }
-        ></textarea>
+        <Row className="row" type="flex" justify="center" gutter={[0, 100]}>
+          <Col span={6}>
+            <div className="menu">
+              <Button
+                ghost
+                className="menu-button"
+                onClick={this.generateKeys.bind(this)}
+              >
+                Genereate keys
+              </Button>
+              <Button
+                ghost
+                className="menu-button"
+                onClick={this.encrypt.bind(this)}
+              >
+                Encrypt
+              </Button>
+              <Button
+                ghost
+                className="menu-button"
+                onClick={this.decrypt.bind(this)}
+              >
+                Decrypt
+              </Button>
+            </div>
+          </Col>
+        </Row>
+        <Row
+          className="row"
+          type="flex"
+          justify="space-around"
+          gutter={[0, 100]}
+        >
+          <Col span={8}>
+            <TextArea
+              autoSize={{ minRows: 10, maxRows: 10 }}
+              placeholder="Paste private key here"
+              className="key-input"
+              value={this.state.privateKey}
+              onChange={evt => this.setState({ privateKey: evt.target.value })}
+            ></TextArea>
+          </Col>
+          <Col span={8}>
+            <TextArea
+              autoSize={{ minRows: 10, maxRows: 10 }}
+              placeholder="Paste public key here"
+              className="key-input"
+              value={this.state.publicKey}
+              onChange={evt => this.setState({ publicKey: evt.target.value })}
+            ></TextArea>
+          </Col>
+        </Row>
+        <Row
+          className="row"
+          type="flex"
+          justify="space-around"
+          gutter={[0, 100]}
+        >
+          <Col span={8}>
+            <TextArea
+              autoSize={{ minRows: 10, maxRows: 10 }}
+              placeholder="Paste plain text message here"
+              className="key-input"
+              value={this.state.decryptedMessage}
+              onChange={evt =>
+                this.setState({ decryptedMessage: evt.target.value })
+              }
+            ></TextArea>
+          </Col>
+          <Col span={8}>
+            <TextArea
+              autoSize={{ minRows: 10, maxRows: 10 }}
+              placeholder="Paste encrypted message here"
+              className="key-input"
+              value={this.state.encryptedMessage}
+              onChange={evt =>
+                this.setState({ encryptedMessage: evt.target.value })
+              }
+            ></TextArea>
+          </Col>
+        </Row>
       </div>
     );
   }
