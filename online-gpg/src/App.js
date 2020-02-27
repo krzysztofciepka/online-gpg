@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import "./App.css";
 import GpgManager from "gpg-manager";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import { Button, Input, Row, Col, notification, Spin, Icon } from "antd";
+import { Button, Input, Row, Col, notification, Spin, Icon, Modal } from "antd";
+import validator from "validator";
 const { TextArea } = Input;
 
 class App extends Component {
@@ -13,12 +14,13 @@ class App extends Component {
       publicKey: "",
       encryptedMessage: "",
       decryptedMessage: "",
-      passphrase: "test",
-      username: "AA",
-      email: "test@example.com",
+      passphrase: "",
+      username: "test@example.com",
+      email: "",
       loading_generate: false,
       loading_encrypt: false,
-      loading_decrypt: false
+      loading_decrypt: false,
+      generateKeysModalVisible: false
     };
   }
 
@@ -40,7 +42,16 @@ class App extends Component {
     });
   }
 
+  showGenerateKeysModal() {
+    this.setState({ generateKeysModalVisible: true });
+  }
+
+  hideGenerateKeysModal() {
+    this.setState({ generateKeysModalVisible: false });
+  }
+
   async generateKeys() {
+    this.hideGenerateKeysModal();
     this.setState({ loading_generate: true });
     const { privateKey, publicKey } = await this.gpgManager.generateKeyPair({
       passphrase: this.state.passphrase,
@@ -115,6 +126,10 @@ class App extends Component {
     document.body.removeChild(element);
   }
 
+  isValidEmail(email) {
+    return validator.isEmail(email);
+  }
+
   render() {
     return (
       <div className="App">
@@ -125,7 +140,7 @@ class App extends Component {
               <Button
                 ghost
                 className="menu-button"
-                onClick={this.generateKeys.bind(this)}
+                onClick={this.showGenerateKeysModal.bind(this)}
               >
                 {this.state.loading_generate ? (
                   <Spin indicator={this.loadingIcon} />
@@ -133,6 +148,35 @@ class App extends Component {
                   "Generate keys"
                 )}
               </Button>
+              <Modal
+                title="Provide key data"
+                okText="Generate"
+                cancelButtonProps={{ ghost: true }}
+                bodyStyle={{ backgroundColor: "#333842", color: "white" }}
+                visible={this.state.generateKeysModalVisible}
+                onOk={this.generateKeys.bind(this)}
+                okButtonProps={{
+                  default: true,
+                  disabled: !this.state.email || !this.state.passphrase
+                }}
+                okType="default"
+                onCancel={this.hideGenerateKeysModal.bind(this)}
+              >
+                <p>E-mail</p>
+                <Input
+                  placeholder="E-mail"
+                  onChange={e => {
+                    if (this.isValidEmail(e.target.value)) {
+                      this.setState({ email: e.target.value });
+                    }
+                  }}
+                />
+                <p>Passphrase</p>
+                <Input.Password
+                  placeholder="Passphrase"
+                  onChange={e => this.setState({ passphrase: e.target.value })}
+                />
+              </Modal>
               <Button
                 ghost
                 className="menu-button"

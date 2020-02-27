@@ -25,3 +25,13 @@
   font-size: medium;
   background-color: whitesmoke;
 }
+
+.ant-modal-header,
+.ant-modal-footer {
+  background-color: #333842;
+  color: whitesmoke;
+}
+
+.ant-modal-title {
+  color: whitesmoke;
+}
