@@ -20,7 +20,8 @@ class App extends Component {
       loading_generate: false,
       loading_encrypt: false,
       loading_decrypt: false,
-      generateKeysModalVisible: false
+      generateKeysModalVisible: false,
+      passphraseModalVisible: false
     };
   }
 
@@ -50,18 +51,31 @@ class App extends Component {
     this.setState({ generateKeysModalVisible: false });
   }
 
+  showPassphraseModal() {
+    this.setState({ passphraseModalVisible: true });
+  }
+
+  hidePassphraseModal() {
+    this.setState({ passphraseModalVisible: false });
+  }
+
   async generateKeys() {
     this.hideGenerateKeysModal();
     this.setState({ loading_generate: true });
-    const { privateKey, publicKey } = await this.gpgManager.generateKeyPair({
-      passphrase: this.state.passphrase,
-      user: {
-        email: this.state.email,
-        name: this.state.username
-      }
-    });
+    try {
+      const { privateKey, publicKey } = await this.gpgManager.generateKeyPair({
+        passphrase: this.state.passphrase,
+        user: {
+          email: this.state.email,
+          name: this.state.username
+        }
+      });
 
-    this.setState({ publicKey, privateKey });
+      this.setState({ publicKey, privateKey });
+    } catch (err) {
+      this.showError("Could not generate keys");
+    }
+
     this.setState({ loading_generate: false });
   }
 
@@ -75,23 +89,27 @@ class App extends Component {
     }
 
     this.setState({ loading_encrypt: true });
-    const encryptedMessage = await this.gpgManager.encrypt({
-      publicKey: this.state.publicKey,
-      signMessage: false,
-      message: this.state.decryptedMessage
-    });
+    try {
+      const encryptedMessage = await this.gpgManager.encrypt({
+        publicKey: this.state.publicKey,
+        signMessage: false,
+        message: this.state.decryptedMessage
+      });
 
-    this.setState({ encryptedMessage });
+      this.setState({ encryptedMessage });
+    } catch (err) {
+      this.showError(
+        "Could not encrypt message. Check if public key is correct"
+      );
+    }
+
     this.setState({ loading_encrypt: false });
   }
 
   async decrypt() {
+    this.hidePassphraseModal();
     if (!this.state.privateKey) {
       return this.showError("Please provide private key");
-    }
-
-    if (!this.state.passphrase) {
-      return this.showError("Please provide passphrase");
     }
 
     if (!this.state.encryptedMessage) {
@@ -99,14 +117,21 @@ class App extends Component {
     }
 
     this.setState({ loading_decrypt: true });
-    const decryptedMessage = await this.gpgManager.decrypt({
-      verify: false,
-      privateKey: this.state.privateKey,
-      passphrase: this.state.passphrase,
-      encryptedMessage: this.state.encryptedMessage
-    });
 
-    this.setState({ decryptedMessage });
+    try {
+      const decryptedMessage = await this.gpgManager.decrypt({
+        verify: false,
+        privateKey: this.state.privateKey,
+        passphrase: this.state.passphrase,
+        encryptedMessage: this.state.encryptedMessage
+      });
+
+      this.setState({ decryptedMessage });
+    } catch (err) {
+      this.showError(
+        "Could not decrypt message. Check if provided data is correct"
+      );
+    }
     this.setState({ loading_decrypt: false });
   }
 
@@ -194,7 +219,13 @@ class App extends Component {
               <Button
                 ghost
                 className="menu-button"
-                onClick={this.decrypt.bind(this)}
+                onClick={() => {
+                  if (this.state.passphrase) {
+                    this.decrypt();
+                  } else {
+                    this.showPassphraseModal();
+                  }
+                }}
               >
                 {this.state.loading_decrypt ? (
                   <Spin indicator={this.loadingIcon} />
@@ -202,6 +233,26 @@ class App extends Component {
                   "Decrypt"
                 )}
               </Button>
+              <Modal
+                title="Provide passphrase"
+                okText="Set"
+                cancelButtonProps={{ ghost: true }}
+                bodyStyle={{ backgroundColor: "#333842", color: "white" }}
+                visible={this.state.passphraseModalVisible}
+                onOk={this.decrypt.bind(this)}
+                okButtonProps={{
+                  default: true,
+                  disabled: !this.state.passphrase
+                }}
+                okType="default"
+                onCancel={this.hidePassphraseModal.bind(this)}
+              >
+                <p className="form-title">Passphrase</p>
+                <Input.Password
+                  placeholder="Passphrase"
+                  onChange={e => this.setState({ passphrase: e.target.value })}
+                />
+              </Modal>
             </div>
           </Col>
         </Row>
