@@ -133,7 +133,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <h1 className="header">Online GPG</h1>
+        <h1 className="header">Online PGP</h1>
         <Row className="row" type="flex" justify="center" gutter={[0, 100]}>
           <Col span={6}>
             <div className="menu">
@@ -162,7 +162,7 @@ class App extends Component {
                 okType="default"
                 onCancel={this.hideGenerateKeysModal.bind(this)}
               >
-                <p>E-mail</p>
+                <p className="form-title">E-mail</p>
                 <Input
                   placeholder="E-mail"
                   onChange={e => {
@@ -171,7 +171,7 @@ class App extends Component {
                     }
                   }}
                 />
-                <p>Passphrase</p>
+                <p className="form-title">Passphrase</p>
                 <Input.Password
                   placeholder="Passphrase"
                   onChange={e => this.setState({ passphrase: e.target.value })}
