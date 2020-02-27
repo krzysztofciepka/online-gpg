@@ -1,3 +1,9 @@
+.header {
+  color: whitesmoke;
+  background-color: #333842;
+  padding: 20px;
+}
+
 .menu {
   display: flex;
   justify-content: center;
@@ -6,6 +12,13 @@
 .menu-button {
   margin: 5px;
   font-size: large;
+  color: whitesmoke;
+}
+
+.textarea-button {
+  margin-top: 5px;
+  margin-right: 5px;
+  color: whitesmoke;
 }
 
 .key-input {
