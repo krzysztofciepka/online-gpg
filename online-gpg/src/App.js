@@ -1,10 +1,12 @@
 import React, { Component } from "react";
 import "./App.css";
 import GpgManager from "gpg-manager";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { Button, Input, Row, Col, notification, Spin, Icon, Modal } from "antd";
-import validator from "validator";
-const { TextArea } = Input;
+
+import { Row, Col, notification } from "antd";
+import { CredentialsModal } from "./components/modal/CredentialsModal";
+import { PassphraseModal } from "./components/modal/PassphraseModal";
+import { TopBar } from "./components/topbar/TopBar";
+import { TextField } from "./components/textfield/TextField";
 
 class App extends Component {
   constructor() {
@@ -15,11 +17,12 @@ class App extends Component {
       encryptedMessage: "",
       decryptedMessage: "",
       passphrase: "",
-      username: "test@example.com",
       email: "",
-      loading_generate: false,
-      loading_encrypt: false,
-      loading_decrypt: false,
+      loading: {
+        generate: false,
+        encrypt: false,
+        decrypt: false
+      },
       generateKeysModalVisible: false,
       passphraseModalVisible: false
     };
@@ -27,7 +30,6 @@ class App extends Component {
 
   async componentDidMount() {
     this.gpgManager = new GpgManager({ rsaKeyBits: 4096 });
-    this.loadingIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
   }
 
   showError(message) {
@@ -38,36 +40,17 @@ class App extends Component {
     notification[type]({
       message: title,
       description: message,
-      duration: 3,
-      onClick: () => { }
+      duration: 3
     });
   }
 
-  showGenerateKeysModal() {
-    this.setState({ generateKeysModalVisible: true });
-  }
-
-  hideGenerateKeysModal() {
-    this.setState({ generateKeysModalVisible: false });
-  }
-
-  showPassphraseModal() {
-    this.setState({ passphraseModalVisible: true });
-  }
-
-  hidePassphraseModal() {
-    this.setState({ passphraseModalVisible: false });
-  }
-
   async generateKeys() {
-    this.hideGenerateKeysModal();
-    this.setState({ loading_generate: true });
     try {
       const { privateKey, publicKey } = await this.gpgManager.generateKeyPair({
         passphrase: this.state.passphrase,
         user: {
           email: this.state.email,
-          name: this.state.username
+          name: this.state.email
         }
       });
 
@@ -75,8 +58,6 @@ class App extends Component {
     } catch (err) {
       this.showError("Could not generate keys");
     }
-
-    this.setState({ loading_generate: false });
   }
 
   async encrypt() {
@@ -88,7 +69,6 @@ class App extends Component {
       return this.showError("Please provide message");
     }
 
-    this.setState({ loading_encrypt: true });
     try {
       const encryptedMessage = await this.gpgManager.encrypt({
         publicKey: this.state.publicKey,
@@ -102,12 +82,9 @@ class App extends Component {
         "Could not encrypt message. Check if public key is correct"
       );
     }
-
-    this.setState({ loading_encrypt: false });
   }
 
   async decrypt() {
-    this.hidePassphraseModal();
     if (!this.state.privateKey) {
       return this.showError("Please provide private key");
     }
@@ -115,8 +92,6 @@ class App extends Component {
     if (!this.state.encryptedMessage) {
       return this.showError("Please provide encrypted message");
     }
-
-    this.setState({ loading_decrypt: true });
 
     try {
       const decryptedMessage = await this.gpgManager.decrypt({
@@ -128,37 +103,117 @@ class App extends Component {
 
       this.setState({ decryptedMessage });
     } catch (err) {
+      console.log(err);
       this.showError(
         "Could not decrypt message. Check if provided data is correct"
       );
     }
-    this.setState({ loading_decrypt: false });
   }
 
-  copyToClipboard(name) {
-    this.showNotification("success", name + " copied!", "");
-  }
-
-  download(content, filename) {
-    const element = document.createElement("a");
-    const file = new Blob([content], {
-      type: "text/plain"
+  async onGenerateKeysModalOk(data) {
+    this.setState({
+      email: data.email,
+      passphrase: data.passphrase,
+      generateKeysModalVisible: false,
+      loading: {
+        generate: true
+      }
     });
-    element.href = URL.createObjectURL(file);
-    element.download = filename;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+
+    await this.generateKeys();
+
+    this.setState({
+      loading: {
+        generate: false
+      }
+    });
   }
 
-  isValidEmail(email) {
-    return validator.isEmail(email);
+  onGenerateKeysModalCancel() {
+    this.setState({
+      generateKeysModalVisible: false
+    });
+  }
+
+  onPassphraseModalOk(data) {
+    this.setState({
+      passphrase: data.passphrase,
+      passphraseModalVisible: false
+    });
+  }
+
+  onPassphraseModalCancel() {
+    this.setState({
+      passphraseModalVisible: false
+    });
+  }
+
+  onGenerateButtonPress() {
+    this.setState({ generateKeysModalVisible: true });
+  }
+
+  async onEcryptButtonPress() {
+    this.setState({
+      loading: {
+        encrypt: true
+      }
+    });
+    await this.encrypt();
+    this.setState({
+      loading: {
+        encrypt: false
+      }
+    });
+  }
+
+  async onDecryptButtonPress() {
+    this.setState({
+      loading: {
+        decrypt: true
+      }
+    });
+    await this.decrypt();
+    this.setState({
+      loading: {
+        decrypt: false
+      }
+    });
+  }
+
+  onTopBarButtonPress(id) {
+    switch (id) {
+      case "generate":
+        this.onGenerateButtonPress();
+        break;
+      case "encrypt":
+        this.onEcryptButtonPress();
+        break;
+      case "decrypt":
+        this.onDecryptButtonPress();
+        break;
+      default:
+        break;
+    }
   }
 
   render() {
     return (
       <div className="App">
-        {/* header */}
+        <TopBar
+          title="Online PGP"
+          onButtonPress={this.onTopBarButtonPress.bind(this)}
+          loading={this.state.loading}
+        ></TopBar>
+        <CredentialsModal
+          visible={this.state.generateKeysModalVisible}
+          onOk={this.onGenerateKeysModalOk.bind(this)}
+          onCancel={this.onGenerateKeysModalCancel.bind(this)}
+        ></CredentialsModal>
+        <PassphraseModal
+          visible={this.state.passphraseModalVisible}
+          onOk={this.onPassphraseModalOk.bind(this)}
+          onCancel={this.onPassphraseModalCancel.bind(this)}
+        ></PassphraseModal>
         <Row
           className="row"
           type="flex"
@@ -166,35 +221,26 @@ class App extends Component {
           gutter={[0, 100]}
         >
           <Col span={8}>
-            {/* text area */}
+            <TextField
+              name="Private key"
+              placeholder="Paste private key here"
+              filename="private.key"
+              text={this.state.privateKey}
+              onChange={data => {
+                this.setState({ privateKey: data.value });
+              }}
+            ></TextField>
           </Col>
           <Col span={8}>
-            <TextArea
-              autoSize={{ minRows: 10, maxRows: 10 }}
+            <TextField
+              name="Public key"
               placeholder="Paste public key here"
-              className="key-input"
-              value={this.state.publicKey}
-              onChange={evt => this.setState({ publicKey: evt.target.value })}
-            ></TextArea>
-            <CopyToClipboard
-              onCopy={() => {
-                this.copyToClipboard("Public key");
-              }}
+              filename="public.key"
               text={this.state.publicKey}
-            >
-              <Button className="textarea-button" ghost>
-                Copy
-              </Button>
-            </CopyToClipboard>
-            <Button
-              className="textarea-button"
-              ghost
-              onClick={() => {
-                this.download(this.state.publicKey, "public.key");
+              onChange={data => {
+                this.setState({ publicKey: data.value });
               }}
-            >
-              Download
-            </Button>
+            ></TextField>
           </Col>
         </Row>
         <Row
@@ -204,64 +250,26 @@ class App extends Component {
           gutter={[0, 100]}
         >
           <Col span={8}>
-            <TextArea
-              autoSize={{ minRows: 10, maxRows: 10 }}
-              placeholder="Paste plain text message here"
-              className="key-input"
-              value={this.state.decryptedMessage}
-              onChange={evt =>
-                this.setState({ decryptedMessage: evt.target.value })
-              }
-            ></TextArea>
-            <CopyToClipboard
-              onCopy={() => {
-                this.copyToClipboard("Message");
-              }}
+            <TextField
+              name="Message"
+              placeholder="Paste message here"
+              filename="message.txt"
               text={this.state.decryptedMessage}
-            >
-              <Button className="textarea-button" ghost>
-                Copy
-              </Button>
-            </CopyToClipboard>
-            <Button
-              className="textarea-button"
-              ghost
-              onClick={() => {
-                this.download(this.state.decryptedMessage, "message.txt");
+              onChange={data => {
+                this.setState({ decryptedMessage: data.value });
               }}
-            >
-              Download
-            </Button>
+            ></TextField>
           </Col>
           <Col span={8}>
-            <TextArea
-              autoSize={{ minRows: 10, maxRows: 10 }}
+            <TextField
+              name="Encrypted message"
               placeholder="Paste encrypted message here"
-              className="key-input"
-              value={this.state.encryptedMessage}
-              onChange={evt =>
-                this.setState({ encryptedMessage: evt.target.value })
-              }
-            ></TextArea>
-            <CopyToClipboard
-              onCopy={() => {
-                this.copyToClipboard("Encrypted message");
-              }}
+              filename="encrypted.gpg"
               text={this.state.encryptedMessage}
-            >
-              <Button className="textarea-button" ghost>
-                Copy
-              </Button>
-            </CopyToClipboard>
-            <Button
-              className="textarea-button"
-              ghost
-              onClick={() => {
-                this.download(this.state.encryptedMessage, "encrypted.txt");
+              onChange={data => {
+                this.setState({ encryptedMessage: data.value });
               }}
-            >
-              Download
-            </Button>
+            ></TextField>
           </Col>
         </Row>
       </div>
