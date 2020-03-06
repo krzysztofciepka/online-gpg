@@ -103,7 +103,9 @@ class App extends Component {
 
       this.setState({ decryptedMessage });
     } catch (err) {
-      console.log(err);
+      if (err.message === "Incorrect key passphrase") {
+        this.setState({ passphraseModalVisible: true });
+      }
       this.showError(
         "Could not decrypt message. Check if provided data is correct"
       );
@@ -190,7 +192,9 @@ class App extends Component {
         decrypt: true
       }
     });
+
     await this.decrypt({ passphrase: this.state.passphrase });
+
     this.setState({
       loading: {
         decrypt: false
