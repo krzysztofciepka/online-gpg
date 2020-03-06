@@ -29,8 +29,8 @@ export class PassphraseModal extends Component {
   render() {
     return (
       <Modal
-        title="Provide key data"
-        okText="Generate"
+        title="Provide passphrase"
+        okText="Set"
         cancelButtonProps={{ ghost: true }}
         bodyStyle={{ backgroundColor: "#333842", color: "white" }}
         visible={this.props.visible}
