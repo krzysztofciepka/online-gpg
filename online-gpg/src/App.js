@@ -44,13 +44,13 @@ class App extends Component {
     });
   }
 
-  async generateKeys() {
+  async generateKeys(data) {
     try {
       const { privateKey, publicKey } = await this.gpgManager.generateKeyPair({
-        passphrase: this.state.passphrase,
+        passphrase: data.passphrase,
         user: {
-          email: this.state.email,
-          name: this.state.email
+          email: data.email,
+          name: data.email
         }
       });
 
@@ -103,6 +103,7 @@ class App extends Component {
 
       this.setState({ decryptedMessage });
     } catch (err) {
+      console.log(err);
       this.showError(
         "Could not decrypt message. Check if provided data is correct"
       );
@@ -119,7 +120,7 @@ class App extends Component {
       }
     });
 
-    await this.generateKeys();
+    await this.generateKeys(data);
 
     this.setState({
       loading: {
