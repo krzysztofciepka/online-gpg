@@ -5,11 +5,11 @@ import validator from "validator";
 export class PassphraseModal extends Component {
   constructor(props) {
     super(props);
-    const { onOk, onCancel, visible } = this.props;
+    const { onOk, onCancel } = this.props;
 
     this.onOk = onOk;
     this.onCancel = onCancel;
-    this.state = { visible: visible, passphrase: "" };
+    this.state = { passphrase: "" };
   }
 
   isValidEmail(email) {
@@ -33,7 +33,7 @@ export class PassphraseModal extends Component {
         okText="Generate"
         cancelButtonProps={{ ghost: true }}
         bodyStyle={{ backgroundColor: "#333842", color: "white" }}
-        visible={this.state.visible}
+        visible={this.props.visible}
         onOk={this.okPressed.bind(this)}
         okButtonProps={{
           default: true,

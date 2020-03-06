@@ -84,7 +84,7 @@ class App extends Component {
     }
   }
 
-  async decrypt() {
+  async decrypt(data) {
     if (!this.state.privateKey) {
       return this.showError("Please provide private key");
     }
@@ -97,7 +97,7 @@ class App extends Component {
       const decryptedMessage = await this.gpgManager.decrypt({
         verify: false,
         privateKey: this.state.privateKey,
-        passphrase: this.state.passphrase,
+        passphrase: data.passphrase,
         encryptedMessage: this.state.encryptedMessage
       });
 
@@ -135,10 +135,21 @@ class App extends Component {
     });
   }
 
-  onPassphraseModalOk(data) {
+  async onPassphraseModalOk(data) {
     this.setState({
       passphrase: data.passphrase,
-      passphraseModalVisible: false
+      passphraseModalVisible: false,
+      loading: {
+        decrypt: true
+      }
+    });
+
+    await this.decrypt(data);
+
+    this.setState({
+      loading: {
+        decrypt: false
+      }
     });
   }
 
@@ -167,12 +178,19 @@ class App extends Component {
   }
 
   async onDecryptButtonPress() {
+    if (!this.state.passphrase) {
+      this.setState({
+        passphraseModalVisible: true
+      });
+      return;
+    }
+
     this.setState({
       loading: {
         decrypt: true
       }
     });
-    await this.decrypt();
+    await this.decrypt({ passphrase: this.state.passphrase });
     this.setState({
       loading: {
         decrypt: false
