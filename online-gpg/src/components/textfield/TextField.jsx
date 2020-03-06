@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Input, Button } from "antd";
+import { Input, Button, notification } from "antd";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
 const { TextArea } = Input;
@@ -7,6 +7,14 @@ const { TextArea } = Input;
 export class TextField extends Component {
   copyToClipboard() {
     this.showNotification("success", this.props.name + " copied!", "");
+  }
+
+  showNotification(type, title, message) {
+    notification[type]({
+      message: title,
+      description: message,
+      duration: 3
+    });
   }
 
   download(content, filename) {
