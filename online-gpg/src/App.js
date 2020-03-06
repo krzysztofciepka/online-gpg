@@ -103,7 +103,6 @@ class App extends Component {
 
       this.setState({ decryptedMessage });
     } catch (err) {
-      console.log(err);
       this.showError(
         "Could not decrypt message. Check if provided data is correct"
       );
@@ -180,16 +179,16 @@ class App extends Component {
     });
   }
 
-  onTopBarButtonPress(id) {
+  async onTopBarButtonPress(id) {
     switch (id) {
       case "generate":
-        this.onGenerateButtonPress();
+        await this.onGenerateButtonPress();
         break;
       case "encrypt":
-        this.onEcryptButtonPress();
+        await this.onEcryptButtonPress();
         break;
       case "decrypt":
-        this.onDecryptButtonPress();
+        await this.onDecryptButtonPress();
         break;
       default:
         break;

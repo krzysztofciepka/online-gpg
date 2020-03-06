@@ -5,7 +5,6 @@ import validator from "validator";
 export class CredentialsModal extends Component {
   constructor(props) {
     super(props);
-    console.log(this.props);
     const { onOk, onCancel } = this.props;
 
     this.onOk = onOk;
